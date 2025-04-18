@@ -47,20 +47,32 @@
 <hr>
 
 <h4>📚 Add New Book</h4>
-<form method="POST" action="{{ url_for('main.add_book') }}">
+<form method="POST" action="{{ url_for('main.add_book') }}" enctype="multipart/form-data">
     <input name="name" class="form-control mb-2" placeholder="Book Name" required>
     <input name="author" class="form-control mb-2" placeholder="Author">
     <textarea name="content" class="form-control mb-2" placeholder="Book Content or Description" required></textarea>
     
-    <select name="section_id" class="form-control mb-2">
+    <select name="section_id" class="form-control mb-2" required>
         <option disabled selected>Select Section</option>
         {% for sec in sections %}
             <option value="{{ sec.id }}">{{ sec.name }}</option>
         {% endfor %}
     </select>
 
-    <button class="btn btn-primary">Add Book</button>
+    <!-- ✅ Add File Uploads -->
+    <div class="mb-2">
+        <label>📄 Upload Book PDF</label>
+        <input type="file" name="pdf" accept=".pdf" class="form-control">
+    </div>
+
+    <div class="mb-2">
+        <label>🖼️ Upload Cover Image</label>
+        <input type="file" name="cover" accept="image/*" class="form-control">
+    </div>
+
+    <button class="btn btn-primary w-100">Add Book</button>
 </form>
+
 
 <hr>
 

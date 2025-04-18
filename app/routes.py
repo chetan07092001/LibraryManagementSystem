@@ -6,7 +6,10 @@ from .models import Book, IssuedBook, Section,Feedback,BookRequest
 import smtplib
 from email.mime.text import MIMEText
 from config import MAIL_USERNAME, MAIL_PASSWORD, MAIL_SERVER, MAIL_PORT, MAIL_USE_TLS, MAIL_RECEIVER
-
+import os
+from werkzeug.utils import secure_filename
+UPLOAD_FOLDER = 'static/uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 main = Blueprint('main', __name__)
 
 # Landing page
@@ -241,23 +244,6 @@ def delete_section(section_id):
     flash('✅ Section deleted successfully.', "success")
     return redirect(url_for('main.librarian_dashboard'))
 
-
-
-@main.route('/add_book', methods=['POST'])
-def add_book():
-    if 'user_id' not in session or session.get('role') != 'librarian':
-        return redirect(url_for('main.librarian_login'))
-
-    name = request.form['name']
-    author = request.form.get('author', '')
-    content = request.form['content']
-    section_id = request.form.get('section_id')
-
-    new_book = Book(name=name, author=author, content=content, section_id=section_id)
-    db.session.add(new_book)
-    db.session.commit()
-    flash("Book added.", "success")
-    return redirect(url_for('main.librarian_dashboard'))
 
 @main.route('/edit_book/<int:book_id>', methods=['GET', 'POST'])
 def edit_book(book_id):
@@ -506,4 +492,48 @@ Regards,
         flash("❌ Message failed to send. Please try again later.", "danger")
 
     return redirect(url_for('main.home'))
+
+@main.route('/add_book', methods=['POST'])
+def add_book():
+    if 'user_id' not in session or session.get('role') != 'librarian':
+        return redirect(url_for('main.librarian_login'))
+
+    # ✅ Get form values
+    name = request.form.get('name')
+    author = request.form.get('author')
+    content = request.form.get('content')
+    section_id = request.form.get('section_id')
+
+    pdf_file = request.files.get('pdf')
+    cover_file = request.files.get('cover')
+
+    # ✅ Initialize paths
+    pdf_path = None
+    cover_path = None
+
+    # ✅ Save files
+    if pdf_file and pdf_file.filename:
+        pdf_filename = secure_filename(pdf_file.filename)
+        pdf_path = os.path.join('static/uploads', pdf_filename)
+        pdf_file.save(pdf_path)
+
+    if cover_file and cover_file.filename:
+        cover_filename = secure_filename(cover_file.filename)
+        cover_path = os.path.join('static/uploads', cover_filename)
+        cover_file.save(cover_path)
+
+    # ✅ Create and save the book
+    new_book = Book(
+        name=name,
+        author=author,
+        content=content,
+        section_id=section_id,
+        pdf_path=pdf_path,
+        cover_image=cover_path
+    )
+
+    db.session.add(new_book)
+    db.session.commit()
+    flash("✅ Book added successfully!", "success")
+    return redirect(url_for('main.librarian_dashboard'))
 

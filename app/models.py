@@ -7,7 +7,7 @@ class User(db.Model):
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
     role = db.Column(db.String(10), nullable=False)  # 'user' or 'librarian'
-    
+
     full_name = db.Column(db.String(150))
     gender = db.Column(db.String(10))
     email = db.Column(db.String(120))
@@ -32,9 +32,10 @@ class Book(db.Model):
     author = db.Column(db.String(100))
     content = db.Column(db.Text, nullable=False)  # this will be just plain text or a path to PDF
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=True)
-
     issued_books = db.relationship('IssuedBook', backref='book', lazy=True)
     feedbacks = db.relationship('Feedback', backref='book', lazy=True)
+    pdf_path = db.Column(db.String(300))       # Path to uploaded PDF
+    cover_image = db.Column(db.String(300))    # Path to uploaded cover image
 
 # Tracks which user has which book, and how long
 class IssuedBook(db.Model):
