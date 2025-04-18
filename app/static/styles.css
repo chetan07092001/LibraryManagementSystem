@@ -1,0 +1,9 @@
+body {
+    padding-bottom: 60px;  /* So footer doesn't overlap content */
+}
+body {
+    background-color: #f8f9fa;
+}
+h1.display-4 {
+    color: #343a40;
+}

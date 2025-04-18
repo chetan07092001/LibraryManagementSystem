@@ -1,0 +1,47 @@
+
+
+
+{% extends 'base.html' %}
+{% block content %}
+<h2>Librarian Stats</h2>
+<a href="{{ url_for('main.user_stats') }}" class="btn btn-info mb-3">📊 View My Reading Stats</a>
+
+<canvas id="booksPerSectionChart" width="400" height="200"></canvas>
+<canvas id="booksIssuedChart" width="400" height="200" class="mt-4"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Section-wise books (Pie Chart)
+    const sectionData = JSON.parse('{{ section_data | tojson | safe }}');
+
+
+    const sectionChart = new Chart(document.getElementById('booksPerSectionChart'), {
+        type: 'pie',
+        data: {
+            labels: sectionData.labels,
+            datasets: [{
+                label: 'Books per Section',
+                data: sectionData.data,
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#7ED6DF', '#E056FD'],
+            }]
+        }
+    });
+
+    // Books issued (Bar Chart)
+    const issuedData = JSON.parse('{{ issued_data | tojson | safe }}');
+    const issueChart = new Chart(document.getElementById('booksIssuedChart'), {
+        type: 'bar',
+        data: {
+            labels: issuedData.labels,
+            datasets: [{
+                label: 'Books Issued by Users',
+                data: issuedData.data,
+                backgroundColor: '#2ecc71'
+            }]
+        }
+    });
+    console.log("Section Data:", sectionData);
+    console.log("Issued Data:", issuedData);
+
+</script>
+{% endblock %}

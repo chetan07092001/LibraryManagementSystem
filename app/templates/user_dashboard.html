@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Welcome to the User Dashboard</h2>
+
+<h4 class="mt-4">📘 Your Issued Books</h4>
+<div class="row row-cols-1 row-cols-md-2 g-3">
+  {% for issue in issued_books %}
+    <div class="col">
+      <div class="card border-success shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">{{ issue.book.name }}</h5>
+          <p class="card-text">
+            <span class="text-muted">Return by:</span> 
+            <strong>{{ issue.return_date.strftime('%Y-%m-%d') }}</strong>
+          </p>
+          <form method="POST" action="{{ url_for('main.return_book', book_id=issue.book.id) }}">
+            <button type="submit" class="btn btn-sm btn-danger">Return</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="text-muted">You have not issued any books.</div>
+  {% endfor %}
+</div>
+
+
+<hr>
+<hr>
+
+<h4 class="mt-4">📩 Your Book Requests</h4>
+<div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+  {% for req in user_requests %}
+    <div class="col">
+      <div class="card shadow-sm border-{{ 'warning' if req.status == 'pending' else 'success' if req.status == 'approved' else 'danger' }}">
+        <div class="card-body">
+          <h5 class="card-title">{{ req.book.name }}</h5>
+          <p>Status:
+            {% if req.status == 'pending' %}
+              <span class="badge bg-warning text-dark">⏳ Pending</span>
+              <form method="POST" action="{{ url_for('main.cancel_request', request_id=req.id) }}" class="mt-2">
+                <button class="btn btn-sm btn-outline-danger">Cancel</button>
+              </form>
+            {% elif req.status == 'approved' %}
+              <span class="badge bg-success">✅ Approved</span>
+            {% elif req.status == 'rejected' %}
+              <span class="badge bg-danger">❌ Rejected</span>
+            {% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <p class="text-muted">You haven’t requested any books yet.</p>
+  {% endfor %}
+</div>
+
+
+
+
+<!-- ✅ START: Filter Form -->
+<form method="GET" class="row mb-4">
+    <div class="col-md-4">
+        <input type="text" name="search" value="{{ request.args.get('search', '') }}" class="form-control" placeholder="Search by book name">
+    </div>
+    <div class="col-md-4">
+        <select name="section" class="form-control">
+            <option value="">All Sections</option>
+            {% for sec in all_sections %}
+                <option value="{{ sec.id }}" {% if request.args.get('section') == sec.id|string %}selected{% endif %}>
+                    {{ sec.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" name="author" value="{{ request.args.get('author', '') }}" class="form-control" placeholder="Search by author">
+    </div>
+    <div class="col-md-1">
+        <button class="btn btn-primary w-100">Search</button>
+    </div>
+</form>
+<!-- ✅ END: Filter Form -->
+
+<h4 class="mt-4">📚 All Books</h4>
+<div class="row row-cols-1 row-cols-md-2 g-4">
+  {% for book in books %}
+    <div class="col">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">{{ book.name }}</h5>
+          <h6 class="card-subtitle mb-2 text-muted">by {{ book.author }}</h6>
+
+          <p>Section: 
+            <span class="badge bg-secondary">{{ book.section.name if book.section else 'N/A' }}</span>
+          </p>
+
+          <!-- Request Button -->
+          <form method="POST" action="{{ url_for('main.request_book', book_id=book.id) }}">
+            <button type="submit" class="btn btn-sm btn-primary">Request Book</button>
+          </form>
+
+          <!-- Feedback Section -->
+          {% set has_issued = issued_books | selectattr("book_id", "equalto", book.id) | list | length > 0 %}
+          {% if has_issued %}
+            <form method="POST" action="{{ url_for('main.submit_feedback', book_id=book.id) }}" class="mt-3">
+              <textarea name="feedback" rows="2" class="form-control mb-2" placeholder="Leave feedback"></textarea>
+              <button class="btn btn-sm btn-success">Submit Feedback</button>
+            </form>
+          {% else %}
+            <p class="text-muted small mt-2">📌 Issue this book to leave feedback.</p>
+          {% endif %}
+
+          <!-- Display Feedbacks -->
+          {% if book.feedbacks %}
+            <hr>
+            <h6 class="text-muted">Feedback:</h6>
+            {% for fb in book.feedbacks %}
+              <div class="bg-light border rounded p-2 mb-1">
+                <strong>{{ fb.user.username }}</strong>: {{ fb.content }}
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-muted small">No feedback yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+
+{% endblock %}

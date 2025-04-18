@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5" style="max-width: 600px;">
+  <h3 class="mb-4">👤 Profile</h3>
+
+  <form method="POST">
+    <div class="mb-3">
+      <label>Full Name</label>
+      <input type="text" name="full_name" class="form-control" value="{{ user.full_name or '' }}">
+    </div>
+
+    <div class="mb-3">
+      <label>Gender</label>
+      <select name="gender" class="form-select">
+        <option value="">Select</option>
+        <option value="Male" {% if user.gender == 'Male' %}selected{% endif %}>Male</option>
+        <option value="Female" {% if user.gender == 'Female' %}selected{% endif %}>Female</option>
+        <option value="Other" {% if user.gender == 'Other' %}selected{% endif %}>Other</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label>Email</label>
+      <input type="email" name="email" class="form-control" value="{{ user.email or '' }}">
+    </div>
+
+    <div class="mb-3">
+      <label>Phone</label>
+      <input type="text" name="phone" class="form-control" value="{{ user.phone or '' }}">
+    </div>
+
+    <button class="btn btn-primary w-100">Update Profile</button>
+  </form>
+</div>
+{% endblock %}

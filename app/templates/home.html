@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- 🎨 Hero Section with Background -->
+<div class="p-5 text-white bg-image rounded-3 mb-5" style="background-image: url('https://unsplash.com/photos/a-long-row-of-books-in-a-library-My06S-Wg_zc'); background-size: cover; background-position: center;">
+  <div class="container py-5 text-center" style="background-color: rgba(0, 0, 0, 0.6); border-radius: 10px;">
+    {% if session.get('user_id') %}
+      <h1 class="display-4">Welcome back, {{ session.get('username') | title }}!</h1>
+      <p class="lead">Ready to dive back into your library dashboard?</p>
+      {% if session.get('role') == 'user' %}
+        <a href="{{ url_for('main.user_dashboard') }}" class="btn btn-primary btn-lg">User Dashboard</a>
+      {% else %}
+        <a href="{{ url_for('main.librarian_dashboard') }}" class="btn btn-info btn-lg">Librarian Dashboard</a>
+      {% endif %}
+    {% else %}
+      <h1 class="display-4 fw-bold">📚 Welcome to MyLibrary</h1>
+      <p class="lead">A digital solution for managing books, requests, feedback, and more!</p>
+      <div class="mt-4">
+        <a href="{{ url_for('main.user_login') }}" class="btn btn-primary btn-lg me-3">User Login</a>
+        <a href="{{ url_for('main.register') }}" class="btn btn-outline-light btn-lg me-3">Register</a>
+        <a href="{{ url_for('main.librarian_login') }}" class="btn btn-outline-warning btn-lg">Librarian Login</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 🧠 About / FAQs Section -->
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <h3>📖 About MyLibrary</h3>
+      <p>
+        MyLibrary is a web-based system designed to simplify the process of managing a library.
+        Students can search, request, and review books, while librarians approve requests, track usage, and monitor feedback.
+        It’s your personal assistant for running a smarter library. 🚀
+      </p>
+    </div>
+    <div class="col-md-6 mb-4">
+      <h3>❓ Frequently Asked Questions</h3>
+      <div class="accordion" id="faqAccordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="faq1">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
+              How do I request a book?
+            </button>
+          </h2>
+          <div id="collapse1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+              After logging in as a user, just click the "Request" button beside any book!
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="faq2">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2">
+              Can I leave feedback on books?
+            </button>
+          </h2>
+          <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+              Yes, once you’ve read and returned a book, you can leave feedback on it.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="faq3">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3">
+              I’m a librarian. How do I manage requests?
+            </button>
+          </h2>
+          <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+              Once logged in as a librarian, head to the "Book Requests" tab to approve or reject requests.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 📬 Contact / Support -->
+<div class="container my-5">
+    <h3 class="text-center mb-4">📬 Contact / Support</h3>
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <form method="POST" action="{{ url_for('main.contact') }}">
+        
+          <div class="mb-3">
+            <label for="name" class="form-label">Your Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Your Email</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label for="message" class="form-label">Message</label>
+            <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Send Message</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+
+{% endblock %}

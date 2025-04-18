@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Library Management System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Optional Custom Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+  
+<body>
+
+    <!-- ✅ Header/Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="{{ url_for('main.home') }}">📚 MyLibrary</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+      
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+      
+                {% if not session.get('user_id') %}
+                <!-- 🔓 Unauthenticated user -->
+                ...
+              {% elif session.get('role') in ['user', 'librarian'] %}
+                <!-- 👤 Authenticated dropdown for both user and librarian -->
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Hi, {{ session.get('username') | title }}
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                    {% if session.get('role') == 'user' %}
+                      <li><a class="dropdown-item" href="{{ url_for('main.user_dashboard') }}">Dashboard</a></li>
+                      <li><a class="dropdown-item" href="{{ url_for('main.user_stats') }}">My Stats</a></li>
+                    {% elif session.get('role') == 'librarian' %}
+                      <li><a class="dropdown-item" href="{{ url_for('main.librarian_dashboard') }}">Dashboard</a></li>
+                      <li><a class="dropdown-item" href="{{ url_for('main.book_requests') }}">Book Requests</a></li>
+                      <li><a class="dropdown-item" href="{{ url_for('main.librarian_stats') }}">Stats</a></li>
+                    {% endif %}
+                    <li><a class="dropdown-item" href="{{ url_for('main.profile') }}">Profile</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('main.change_password') }}">Change Password</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
+                  </ul>                  
+                </li>
+              {% endif %}
+              
+      
+            </ul>
+          </div>
+        </div>
+      </nav>
+      
+      
+
+    <!-- ✅ Main Content -->
+    <div class="container my-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category or 'info' }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- ✅ Footer -->
+    <footer class="bg-dark text-white text-center py-2 fixed-bottom">
+        <small>&copy; 2025 Library Management System. All rights reserved.</small>
+    </footer>
+
+    <!-- Bootstrap JS (optional but recommended for interactive components) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 🔒 Logout Confirmation Modal -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow">
+        <div class="modal-header">
+          <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to log out? You’ll need to log in again to access your dashboard.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <a href="{{ url_for('main.logout') }}" class="btn btn-danger">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Auto-dismiss alerts after 4 seconds
+    setTimeout(() => {
+      const alerts = document.querySelectorAll('.alert');
+      alerts.forEach(alert => {
+        const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+        bsAlert.close();
+      });
+    }, 4000);
+  </script>
+   
+</body>
+</html>

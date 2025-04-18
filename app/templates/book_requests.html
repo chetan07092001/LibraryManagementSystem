@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3 class="mt-4">📩 Pending Book Requests</h3>
+<div class="row row-cols-1 row-cols-md-2 g-3">
+  {% for req in requests %}
+    <div class="col">
+      <div class="card border-warning shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">{{ req.book.name }}</h5>
+          <p class="card-text">
+            <strong>User:</strong> {{ req.user.username }} <br>
+            <strong>Requested on:</strong> {{ req.date_requested.strftime('%Y-%m-%d') }}
+          </p>
+          <div class="d-flex gap-2">
+            <form method="POST" action="{{ url_for('main.process_request', request_id=req.id, action='approve') }}">
+              <button type="submit" class="btn btn-sm btn-success">Approve ✅</button>
+            </form>
+            <form method="POST" action="{{ url_for('main.process_request', request_id=req.id, action='reject') }}">
+              <button type="submit" class="btn btn-sm btn-danger">Reject ❌</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <p class="text-muted">No pending requests.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}

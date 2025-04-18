@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Librarian Dashboard</h2>
+<div class="d-flex justify-content-end gap-2 mb-4">
+    <a href="{{ url_for('main.book_requests') }}" class="btn btn-outline-warning">📩 View Book Requests</a>
+    <a href="{{ url_for('main.librarian_stats') }}" class="btn btn-outline-info">📊 View Stats</a>
+  </div>
+
+
+  <div class="card mb-4 shadow-sm" style="max-width: 500px;">
+    <div class="card-body">
+      <h5 class="card-title mb-3">➕ Add New Section</h5>
+      <form method="POST" action="{{ url_for('main.add_section') }}">
+        <div class="mb-3">
+          <label for="sectionName" class="form-label">Section Name</label>
+          <input type="text" class="form-control" id="sectionName" name="name" required>
+        </div>
+        <button type="submit" class="btn btn-success w-100">Add Section</button>
+      </form>
+    </div>
+  </div>
+  
+<h3 class="mt-4">📂 All Sections</h3>
+<div class="row row-cols-1 row-cols-md-2 g-3 mb-5">
+  {% for section in sections %}
+    <div class="col">
+      <div class="card shadow-sm border-start border-4 border-primary">
+        <div class="card-body">
+          <h5 class="card-title">{{ section.name }}</h5>
+          <p class="text-muted mb-1">Books in this section: <strong>{{ section.books | length }}</strong></p>
+            
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('main.edit_section', section_id=section.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+            <form method="POST" action="{{ url_for('main.delete_section', section_id=section.id) }}" 
+      onsubmit="return confirm('Are you sure you want to delete this section? This action cannot be undone.')">
+  <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+</form>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <p class="text-muted">No sections available.</p>
+  {% endfor %}
+</div>
+
+<hr>
+
+<h4>📚 Add New Book</h4>
+<form method="POST" action="{{ url_for('main.add_book') }}">
+    <input name="name" class="form-control mb-2" placeholder="Book Name" required>
+    <input name="author" class="form-control mb-2" placeholder="Author">
+    <textarea name="content" class="form-control mb-2" placeholder="Book Content or Description" required></textarea>
+    
+    <select name="section_id" class="form-control mb-2">
+        <option disabled selected>Select Section</option>
+        {% for sec in sections %}
+            <option value="{{ sec.id }}">{{ sec.name }}</option>
+        {% endfor %}
+    </select>
+
+    <button class="btn btn-primary">Add Book</button>
+</form>
+
+<hr>
+
+<h4>All Books:</h4>
+<div class="row row-cols-1 row-cols-md-2 g-4">
+  {% for book in books %}
+    <div class="col">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">{{ book.name }}</h5>
+          <h6 class="card-subtitle mb-2 text-muted">Author: {{ book.author }}</h6>
+
+          <p>Section: 
+            <span class="badge bg-secondary">{{ book.section.name if book.section else 'N/A' }}</span>
+          </p>
+
+          <!-- Book Request Button -->
+          <form method="POST" action="{{ url_for('main.request_book', book_id=book.id) }}">
+            <button type="submit" class="btn btn-sm btn-primary">Request Book</button>
+          </form>
+
+          <!-- Feedback -->
+          {% set has_issued = issued_books | selectattr("book_id", "equalto", book.id) | list | length > 0 %}
+          {% if has_issued %}
+            <form method="POST" action="{{ url_for('main.submit_feedback', book_id=book.id) }}" class="mt-3">
+              <textarea name="feedback" rows="2" class="form-control mb-2" placeholder="Leave feedback"></textarea>
+              <button class="btn btn-sm btn-success">Submit Feedback</button>
+            </form>
+          {% else %}
+            <p class="text-muted small mt-2">📌 Issue this book to leave feedback.</p>
+          {% endif %}
+
+          <!-- Show Feedbacks -->
+          {% if book.feedbacks %}
+            <hr>
+            <h6 class="text-muted">Feedback:</h6>
+            {% for fb in book.feedbacks %}
+              <div class="bg-light border rounded p-2 mb-1">
+                <strong>{{ fb.user.username }}</strong>: {{ fb.content }}
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-muted small">No feedback yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

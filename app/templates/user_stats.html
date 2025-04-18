@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>User Stats</h2>
+
+<canvas id="sectionChart" width="400" height="200"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const sectionData = JSON.parse('{{ section_data | tojson | safe }}');
+    console.log("Section Data:", sectionData);
+    console.log("User Section Data:", sectionData);
+
+    const sectionChart = new Chart(document.getElementById('sectionChart'), {
+        type: 'pie',
+        data: {
+            labels: sectionData.labels,
+            datasets: [{
+                label: 'Books Read by Section',
+                data: sectionData.data,
+                backgroundColor: ['#1abc9c', '#e74c3c', '#3498db', '#f39c12', '#9b59b6']
+            }]
+        }
+    });
+</script>
+{% endblock %}

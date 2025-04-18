@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Welcome to Library System</h2>
+<a href="{{ url_for('main.register') }}" class="btn btn-success">Register as User</a>
+<a href="{{ url_for('main.user_login') }}" class="btn btn-primary">User Login</a>
+<a href="{{ url_for('main.librarian_login') }}" class="btn btn-secondary">Librarian Login</a>
+{% endblock %}
