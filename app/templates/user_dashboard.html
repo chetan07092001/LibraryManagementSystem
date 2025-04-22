@@ -2,6 +2,7 @@
 {% block content %}
 <h2>Welcome to the User Dashboard</h2>
 
+<!-- 📘 Issued Books -->
 <h4 class="mt-4">📘 Your Issued Books</h4>
 <div class="row row-cols-1 row-cols-md-2 g-3">
   {% for issue in issued_books %}
@@ -10,7 +11,7 @@
         <div class="card-body">
           <h5 class="card-title">{{ issue.book.name }}</h5>
           <p class="card-text">
-            <span class="text-muted">Return by:</span> 
+            <span class="text-muted">Return by:</span>
             <strong>{{ issue.return_date.strftime('%Y-%m-%d') }}</strong>
           </p>
           <form method="POST" action="{{ url_for('main.return_book', book_id=issue.book.id) }}">
@@ -24,10 +25,10 @@
   {% endfor %}
 </div>
 
-
 <hr>
 <hr>
 
+<!-- 📩 Requests -->
 <h4 class="mt-4">📩 Your Book Requests</h4>
 <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
   {% for req in user_requests %}
@@ -55,52 +56,66 @@
   {% endfor %}
 </div>
 
-
-
-
-<!-- ✅ START: Filter Form -->
+<!-- 🔍 Filter Form -->
 <form method="GET" class="row mb-4">
-    <div class="col-md-4">
-        <input type="text" name="search" value="{{ request.args.get('search', '') }}" class="form-control" placeholder="Search by book name">
-    </div>
-    <div class="col-md-4">
-        <select name="section" class="form-control">
-            <option value="">All Sections</option>
-            {% for sec in all_sections %}
-                <option value="{{ sec.id }}" {% if request.args.get('section') == sec.id|string %}selected{% endif %}>
-                    {{ sec.name }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-md-3">
-        <input type="text" name="author" value="{{ request.args.get('author', '') }}" class="form-control" placeholder="Search by author">
-    </div>
-    <div class="col-md-1">
-        <button class="btn btn-primary w-100">Search</button>
-    </div>
+  <div class="col-md-4">
+    <input type="text" name="search" value="{{ request.args.get('search', '') }}" class="form-control" placeholder="Search by book name">
+  </div>
+  <div class="col-md-4">
+    <select name="section" class="form-control">
+      <option value="">All Sections</option>
+      {% for sec in all_sections %}
+        <option value="{{ sec.id }}" {% if request.args.get('section') == sec.id|string %}selected{% endif %}>
+          {{ sec.name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <input type="text" name="author" value="{{ request.args.get('author', '') }}" class="form-control" placeholder="Search by author">
+  </div>
+  <div class="col-md-1">
+    <button class="btn btn-primary w-100">Search</button>
+  </div>
 </form>
-<!-- ✅ END: Filter Form -->
 
+<!-- 📚 All Books -->
 <h4 class="mt-4">📚 All Books</h4>
 <div class="row row-cols-1 row-cols-md-2 g-4">
   {% for book in books %}
     <div class="col">
       <div class="card h-100 shadow-sm">
+        {% if book.cover_image %}
+        <img src="{{ url_for('static', filename=book.cover_image) }}" class="card-img-top" style="height: 250px; object-fit: cover;">
+
+        {% endif %}
         <div class="card-body">
           <h5 class="card-title">{{ book.name }}</h5>
           <h6 class="card-subtitle mb-2 text-muted">by {{ book.author }}</h6>
 
-          <p>Section: 
+          <p>Section:
             <span class="badge bg-secondary">{{ book.section.name if book.section else 'N/A' }}</span>
           </p>
 
-          <!-- Request Button -->
+          <!-- 📖 Read Button if approved -->
+          {% set is_approved = false %}
+          {% for req in user_requests %}
+            {% if req.book_id == book.id and req.status == 'approved' %}
+              {% set is_approved = true %}
+            {% endif %}
+          {% endfor %}
+          
+          {% if is_approved %}
+            <a href="{{ url_for('main.read_book', book_id=book.id) }}" class="btn btn-sm btn-outline-primary mb-2">📖 Read Book</a>
+          {% endif %}
+          
+
+          <!-- 📩 Request Button -->
           <form method="POST" action="{{ url_for('main.request_book', book_id=book.id) }}">
             <button type="submit" class="btn btn-sm btn-primary">Request Book</button>
           </form>
 
-          <!-- Feedback Section -->
+          <!-- 📝 Feedback -->
           {% set has_issued = issued_books | selectattr("book_id", "equalto", book.id) | list | length > 0 %}
           {% if has_issued %}
             <form method="POST" action="{{ url_for('main.submit_feedback', book_id=book.id) }}" class="mt-3">
@@ -111,7 +126,7 @@
             <p class="text-muted small mt-2">📌 Issue this book to leave feedback.</p>
           {% endif %}
 
-          <!-- Display Feedbacks -->
+          <!-- 💬 Feedback List -->
           {% if book.feedbacks %}
             <hr>
             <h6 class="text-muted">Feedback:</h6>
@@ -128,6 +143,4 @@
     </div>
   {% endfor %}
 </div>
-
-
 {% endblock %}

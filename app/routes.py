@@ -8,8 +8,9 @@ from email.mime.text import MIMEText
 from config import MAIL_USERNAME, MAIL_PASSWORD, MAIL_SERVER, MAIL_PORT, MAIL_USE_TLS, MAIL_RECEIVER
 import os
 from werkzeug.utils import secure_filename
-UPLOAD_FOLDER = 'static/uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+os.makedirs('static/uploads', exist_ok=True)
+
 main = Blueprint('main', __name__)
 
 # Landing page
@@ -493,36 +494,45 @@ Regards,
 
     return redirect(url_for('main.home'))
 
+
 @main.route('/add_book', methods=['POST'])
 def add_book():
     if 'user_id' not in session or session.get('role') != 'librarian':
         return redirect(url_for('main.librarian_login'))
 
-    # ✅ Get form values
+    # 1. Form fields
     name = request.form.get('name')
     author = request.form.get('author')
     content = request.form.get('content')
     section_id = request.form.get('section_id')
 
+    # 2. Files
     pdf_file = request.files.get('pdf')
     cover_file = request.files.get('cover')
 
-    # ✅ Initialize paths
+    # 3. Upload folder
+    upload_folder = os.path.join(os.getcwd(), 'app', 'static', 'uploads')
+
+    os.makedirs(upload_folder, exist_ok=True)
+
     pdf_path = None
     cover_path = None
 
-    # ✅ Save files
+    # 4. Save PDF
     if pdf_file and pdf_file.filename:
         pdf_filename = secure_filename(pdf_file.filename)
-        pdf_path = os.path.join('static/uploads', pdf_filename)
-        pdf_file.save(pdf_path)
+        full_pdf_path = os.path.join(upload_folder, pdf_filename)
+        pdf_file.save(full_pdf_path)
+        pdf_path = f"uploads/{pdf_filename}".replace("\\", "/")  # ✅ Convert backslashes
 
+    # 5. Save Cover Image
     if cover_file and cover_file.filename:
-        cover_filename = secure_filename(cover_file.filename)
-        cover_path = os.path.join('static/uploads', cover_filename)
-        cover_file.save(cover_path)
+        cover_filename = secure_filename(cover_file.filename).lower()
+        full_cover_path = os.path.join(upload_folder, cover_filename)
+        cover_file.save(full_cover_path)
+        cover_path = f"uploads/{cover_filename}".replace("\\", "/")  # ✅ Convert backslashes
 
-    # ✅ Create and save the book
+    # 6. Save to DB
     new_book = Book(
         name=name,
         author=author,
@@ -531,9 +541,24 @@ def add_book():
         pdf_path=pdf_path,
         cover_image=cover_path
     )
-
     db.session.add(new_book)
     db.session.commit()
+
     flash("✅ Book added successfully!", "success")
     return redirect(url_for('main.librarian_dashboard'))
 
+
+@main.route('/read_book/<int:book_id>')
+def read_book(book_id):
+    if 'user_id' not in session:
+        return redirect(url_for('main.user_login'))
+
+    user_id = session['user_id']
+    book = Book.query.get_or_404(book_id)
+
+    approved = BookRequest.query.filter_by(user_id=user_id, book_id=book_id, status='approved').first()
+    if not approved:
+        flash("You’re not approved to read this book.", "danger")
+        return redirect(url_for('main.user_dashboard'))
+
+    return render_template('read_book.html', book=book)
